@@ -53,16 +53,6 @@ export async function readEntry(entryId: number): Promise<Entry | undefined> {
   }
 }
 
-// export async function addEntry(entry: Entry): Promise<Entry> {
-//   const data = readData();
-//   const newEntry = {
-//     ...entry,
-//     entryId: data.nextEntryId++,
-//   };
-//   data.entries.unshift(newEntry);
-//   writeData(data);
-//   return newEntry;
-// }
 
 export async function addEntry(entry: Entry): Promise<Entry | undefined> {
   try {
@@ -81,21 +71,30 @@ export async function addEntry(entry: Entry): Promise<Entry | undefined> {
   }
 }
 
-export async function updateEntry(entry: Entry): Promise<Entry> {
-  const data = readData();
-  const newEntries = data.entries.map((e) =>
-    e.entryId === entry.entryId ? entry : e
-  );
-  data.entries = newEntries;
-  writeData(data);
-  return entry;
+export async function updateEntry(entry: Entry): Promise<Entry | undefined> {
+  try {
+    const res = await fetch(`/api/entries/${entry.entryId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(entry),
+    });
+    if (!res.ok) throw new Error('Res connection not OK');
+    const result = await res.json();
+    return result;
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 export async function removeEntry(entryId: number): Promise<void> {
-  const data = readData();
-  const updatedArray = data.entries.filter(
-    (entry) => entry.entryId !== entryId
-  );
-  data.entries = updatedArray;
-  writeData(data);
+  try {
+    const res = await fetch(`/api/entries/${entryId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('This is not OK');
+  } catch (err) {
+    console.log(err);
+  }
 }
