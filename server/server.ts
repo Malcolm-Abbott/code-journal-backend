@@ -61,22 +61,15 @@ app.get('/api/entries/:entryId', async (req, res, next) => {
 
 app.post('/api/entries', async (req, res, next) => {
   try {
-    const { entryId, title, notes, photoUrl } = req.body;
-    if (!Number.isInteger(+entryId))
-      throw new ClientError(400, 'entryId must be a number');
-    if (!entryId || !title || !notes || !photoUrl)
+    const { title, notes, photoUrl } = req.body;
+    if (!title || !notes || !photoUrl)
       throw new ClientError(400, 'Entry requires all inputs');
     const sql = `
-      insert into "entries" ("entryId", "title", "notes", "photoUrl")
-        values($1, $2, $3, $4)
+      insert into "entries" ("title", "notes", "photoUrl")
+        values($1, $2, $3)
         returning *;
     `;
-    const params = [
-      entryId as string,
-      title as string,
-      notes as string,
-      photoUrl as string,
-    ];
+    const params = [title as string, notes as string, photoUrl as string];
     const result = await db.query(sql, params);
     const [entry] = result.rows;
     if (!entry) throw new ClientError(404, `Entry not found.`);
