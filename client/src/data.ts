@@ -5,32 +5,6 @@ export type Entry = {
   photoUrl: string;
 };
 
-type Data = {
-  entries: Entry[];
-  nextEntryId: number;
-};
-
-const dataKey = 'code-journal-data';
-
-function readData(): Data {
-  let data: Data;
-  const localData = localStorage.getItem(dataKey);
-  if (localData) {
-    data = JSON.parse(localData);
-  } else {
-    data = {
-      entries: [],
-      nextEntryId: 1,
-    };
-  }
-  return data;
-}
-
-function writeData(data: Data): void {
-  const dataJSON = JSON.stringify(data);
-  localStorage.setItem(dataKey, dataJSON);
-}
-
 export async function readEntries() {
   try {
     const res = await fetch('/api/entries');
@@ -52,7 +26,6 @@ export async function readEntry(entryId: number): Promise<Entry | undefined> {
     console.log(err);
   }
 }
-
 
 export async function addEntry(entry: Entry): Promise<Entry | undefined> {
   try {
