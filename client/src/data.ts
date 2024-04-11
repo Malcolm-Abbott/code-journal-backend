@@ -31,9 +31,11 @@ function writeData(data: Data): void {
   localStorage.setItem(dataKey, dataJSON);
 }
 
-export async function readEntries(): Promise<Entry[]> {
-  return readData().entries;
-}
+// export async function readEntries(): Promise<Entry[]> {
+//   return readData().entries;
+// }
+
+export async function readEntries():
 
 export async function readEntry(entryId: number): Promise<Entry | undefined> {
   return readData().entries.find((e) => e.entryId === entryId);

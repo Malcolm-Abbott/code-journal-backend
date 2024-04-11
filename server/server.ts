@@ -3,6 +3,7 @@ import 'dotenv/config';
 import pg from 'pg';
 import express from 'express';
 import { ClientError, errorMiddleware } from './lib/index.js';
+import { nextTick } from 'process';
 
 type Entry = {
   entryId?: number;
@@ -80,6 +81,55 @@ app.post('/api/entries', async (req, res, next) => {
     const [entry] = result.rows;
     if (!entry) throw new ClientError(404, `Entry not found.`);
     res.status(201).json(entry);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/entries/:entryId', async (req, res, next) => {
+  try {
+    const { entryId } = req.params;
+    if (!Number.isInteger(+entryId))
+      throw new ClientError(400, 'entryId must be a number');
+    const { title, notes, photoUrl } = req.body;
+    if (!title || !notes || !photoUrl)
+      throw new ClientError(400, 'title, notes, photoUrl needed');
+    const sql = `
+    Update "entries"
+    Set "title" = $1, "notes" = $2, "photoUrl" = $3
+    Where "entryId" = $4
+    Returning *;
+    `;
+    const params = [
+      title as string,
+      notes as string,
+      photoUrl as string,
+      entryId as string,
+    ];
+    const result = await db.query(sql, params);
+    const [updatedEntry] = result.rows;
+    if (!updatedEntry) throw new ClientError(404, 'not updated entry');
+    res.status(200).json(updatedEntry);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/entries/:entryId', async (req, res, next) => {
+  try {
+    const { entryId } = req.params;
+    if (!Number.isInteger(+entryId))
+      throw new ClientError(400, 'entryId not a number');
+    const sql = `
+    Delete from "entries"
+    Where "entryId" = $1
+    Returning *;
+    `;
+    const params = [entryId as string];
+    const result = await db.query(sql, params);
+    const [deletedEntry] = result.rows;
+    if (!deletedEntry) throw new ClientError(404, 'entry not found');
+    res.sendStatus(204);
   } catch (err) {
     next(err);
   }
